@@ -1,0 +1,17 @@
+spec:
+  template:
+    metadata:
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/agent-inject-status: "update"
+        vault.hashicorp.com/role: "admission-controller"
+        vault.hashicorp.com/agent-inject-secret-tls.crt: "gandalf/secrets"
+        vault.hashicorp.com/agent-inject-template-tls.crt: |
+          {{- with secret "gandalf/secrets" -}}
+                    {{ .Data.data.certificate }}
+          {{- end }}
+        vault.hashicorp.com/agent-inject-secret-tls.key: "gandalf/secrets"
+        vault.hashicorp.com/agent-inject-template-tls.key: |
+            {{- with secret "gandalf/secrets" -}}
+                      {{ .Data.data.key }}
+            {{- end }}

@@ -1,0 +1,5 @@
+# Ignore everything in this directory except the Dockerfile and .gitignore
+*
+!Dockerfile
+!.gitignore
+!gandalf-config.json

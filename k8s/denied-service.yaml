@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nazgul-service
+  labels:
+    fellowship: "no"
+spec:
+  type: LoadBalancer
+  selector:
+    app: test-app
+  ports:
+    - port: 8000
+      protocol: TCP
+      targetPort: 8080

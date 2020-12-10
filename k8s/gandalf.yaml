@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admission-controller
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vault-tokenreview
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: admission-controller
+    namespace: default
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gandalf
+  labels:
+    app: gandalf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gandalf
+  template:
+    metadata:
+      labels:
+        app: gandalf
+        prod-ready: "yes"
+    spec:
+      serviceAccountName: admission-controller
+      containers:
+        - name: gandalf-controller
+          image: spremkumar/gandalf:v0.0.1
+          command: ["/gandalf"]
+          args:
+            [
+                "--cert-file",
+                "/vault/secrets/tls.crt",
+                "--key-file",
+                "/vault/secrets/tls.key",
+                "--config",
+                "/gandalf-config.json",
+            ]
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8443
+              name: server-tls-port
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128M"
+            limits:
+              cpu: "250m"
+              memory: "256M"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gandalf
+spec:
+  selector:
+    app: gandalf
+  ports:
+    - port: 443
+      protocol: TCP
+      targetPort: server-tls-port
+---
